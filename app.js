@@ -7,13 +7,13 @@ const els = {
   contrastValue: $("contrast-value"), brightness: $("brightness"), brightnessValue: $("brightness-value"), saturation: $("saturation"),
   saturationValue: $("saturation-value"), invert: $("invert"), dither: $("dither"), ditherAmount: $("dither-amount"),
   ditherValue: $("dither-value"), motion: $("motion"), duration: $("duration"), fps: $("fps"), png: $("png-button"), gif: $("gif-button"),
-  webm: $("webm-button"), text: $("text-button"), exportNote: $("export-note"), textDialog: $("text-dialog"), textOutput: $("text-output"),
+  webm: $("webm-button"), svg: $("svg-button"), text: $("text-button"), exportNote: $("export-note"), textDialog: $("text-dialog"), textOutput: $("text-output"),
   textSize: $("text-size"), textClose: $("text-close"), textCopy: $("text-copy"), textDownload: $("text-download")
 };
 
 const railButtons = [...document.querySelectorAll(".rail-button[data-tab]")];
 const tabPanels = [...document.querySelectorAll(".tab-panel[data-panel]")];
-const ctx = els.canvas.getContext("2d", { alpha: false });
+const ctx = els.canvas.getContext("2d", { alpha: true });
 const sampleCanvas = document.createElement("canvas");
 const sampleCtx = sampleCanvas.getContext("2d", { willReadFrequently: true });
 const orderedDither = [
@@ -122,7 +122,7 @@ function glyphDensity(red, green, blue, row, column, time, background = state.ba
   let luminance = (0.2126 * red) + (0.7152 * green) + (0.0722 * blue);
   luminance = ((luminance - 128) * state.contrast) + 128 + state.brightness;
   luminance = clamp(luminance);
-  let density = background === "white" ? 255 - luminance : luminance;
+  let density = background === "black" ? luminance : 255 - luminance;
   if (state.invert) density = 255 - density;
 
   if (state.dither === "ordered") {
@@ -144,6 +144,22 @@ function sourceColor(red, green, blue) {
   };
 }
 
+function glyphColor(red, green, blue) {
+  if (state.colorMode === "mono") return state.background === "black" ? "#ffffff" : "#010101";
+  if (state.colorMode === "blue") return "#0008ff";
+  const color = sourceColor(red, green, blue);
+  return `rgb(${color.red}, ${color.green}, ${color.blue})`;
+}
+
+function escapeXml(value) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&apos;");
+}
+
 function renderFrame(time = 0) {
   const { width, height } = sourceDimensions();
   const output = resizeOutput(width, height);
@@ -155,8 +171,11 @@ function renderFrame(time = 0) {
 
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.globalAlpha = 1;
-  ctx.fillStyle = backgroundColor;
-  ctx.fillRect(0, 0, els.canvas.width, els.canvas.height);
+  ctx.clearRect(0, 0, els.canvas.width, els.canvas.height);
+  if (state.background !== "transparent") {
+    ctx.fillStyle = backgroundColor;
+    ctx.fillRect(0, 0, els.canvas.width, els.canvas.height);
+  }
   ctx.scale(dpr, dpr);
   ctx.font = `${Math.max(6, state.fontSize)}px "Courier New", monospace`;
   ctx.textBaseline = "top";
@@ -177,12 +196,7 @@ function renderFrame(time = 0) {
       if (char === " ") continue;
 
       const wave = state.motion === "wave" ? Math.sin(time / 280 + row * 0.42) * state.fontSize * 0.48 : 0;
-      if (state.colorMode === "mono") ctx.fillStyle = state.background === "white" ? "#010101" : "#ffffff";
-      else if (state.colorMode === "blue") ctx.fillStyle = "#0008ff";
-      else {
-        const color = sourceColor(red, green, blue);
-        ctx.fillStyle = `rgb(${color.red}, ${color.green}, ${color.blue})`;
-      }
+      ctx.fillStyle = glyphColor(red, green, blue);
       ctx.globalAlpha = alpha / 255;
       ctx.fillText(char, column * cellWidth, row * cellHeight + wave);
     }
@@ -227,8 +241,12 @@ function baseName() {
   return (sourceFile?.name || "ascii-art").replace(/\.[^.]+$/, "").replace(/[^a-z0-9_-]+/gi, "-").toLowerCase();
 }
 
-function textExportAvailable() {
+function staticImageExportAvailable() {
   return Boolean(source && sourceType === "image" && state.motion === "static");
+}
+
+function textExportAvailable() {
+  return staticImageExportAvailable();
 }
 
 function updateExportState() {
@@ -236,10 +254,11 @@ function updateExportState() {
   els.png.disabled = unavailable;
   els.gif.disabled = unavailable;
   els.webm.disabled = unavailable;
+  els.svg.disabled = busy || !staticImageExportAvailable();
   els.text.disabled = busy || !textExportAvailable();
   els.exportNote.textContent = state.motion === "static"
-    ? "Text copy is available for static images. GIF uses local FFmpeg."
-    : "Text copy is disabled in animation modes. GIF uses local FFmpeg.";
+    ? "SVG and text are available for static images. GIF uses local FFmpeg."
+    : "SVG and text are disabled in animation modes. GIF uses local FFmpeg.";
 }
 
 function setBusy(nextBusy) {
@@ -336,6 +355,57 @@ async function exportPng() {
     downloadBlob(blob, `${baseName()}.png`);
     setStatus("Full-frame PNG exported.", "ok");
   }, "image/png");
+}
+
+function generateSvgOutput() {
+  const { width, height } = sourceDimensions();
+  const output = resizeOutput(width, height);
+  const columns = state.cols;
+  const rows = output.rows;
+  const pixels = drawSourceSample(columns, rows, 0, false).data;
+  const chars = currentCharset();
+  const cellWidth = output.outputWidth / columns;
+  const cellHeight = output.outputHeight / rows;
+  const elements = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${output.outputWidth}" height="${output.outputHeight}" viewBox="0 0 ${output.outputWidth} ${output.outputHeight}" role="img" aria-label="ASCII art exported by ASCII Image Lab">`,
+    "<title>ASCII art exported by ASCII Image Lab</title>"
+  ];
+
+  if (state.background !== "transparent") {
+    elements.push(`<rect width="100%" height="100%" fill="${state.background === "white" ? "#ffffff" : "#010101"}"/>`);
+  }
+  elements.push(`<g font-family="Courier New, monospace" font-size="${state.fontSize}" xml:space="preserve">`);
+
+  for (let row = 0; row < rows; row += 1) {
+    for (let column = 0; column < columns; column += 1) {
+      const index = (row * columns + column) * 4;
+      const alpha = pixels[index + 3];
+      if (alpha < 18) continue;
+      const red = pixels[index];
+      const green = pixels[index + 1];
+      const blue = pixels[index + 2];
+      const density = glyphDensity(red, green, blue, row, column, 0);
+      const char = chars[Math.min(chars.length - 1, Math.floor((density / 255) * (chars.length - 1)))];
+      if (char === " ") continue;
+      const x = (column * cellWidth).toFixed(2);
+      const y = (row * cellHeight).toFixed(2);
+      const opacity = alpha < 250 ? ` fill-opacity="${(alpha / 255).toFixed(3)}"` : "";
+      elements.push(`<text x="${x}" y="${y}" dominant-baseline="text-before-edge" fill="${glyphColor(red, green, blue)}"${opacity}>${escapeXml(char)}</text>`);
+    }
+  }
+  elements.push("</g>", "</svg>");
+  return elements.join("\n");
+}
+
+function exportSvg() {
+  if (!staticImageExportAvailable()) {
+    setStatus("SVG export is available only for static images.", "error");
+    return;
+  }
+  const svg = generateSvgOutput();
+  downloadBlob(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }), `${baseName()}.svg`);
+  setStatus(state.background === "transparent" ? "Transparent vector SVG exported." : "Vector SVG exported.", "ok");
 }
 
 function wait(milliseconds) {
@@ -506,6 +576,7 @@ document.querySelectorAll(".controls input:not([type='file']), .controls select"
 });
 railButtons.forEach((button) => button.addEventListener("click", () => activateTab(button.dataset.tab)));
 els.png.addEventListener("click", exportPng);
+els.svg.addEventListener("click", exportSvg);
 els.gif.addEventListener("click", exportGif);
 els.webm.addEventListener("click", exportWebm);
 els.text.addEventListener("click", openTextOutput);

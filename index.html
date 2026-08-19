@@ -51,7 +51,7 @@
           </div>
           <div class="stage-footer">
             <span id="status-message" role="status">Ready for a source.</span>
-            <span class="kbd">PNG <span>·</span> GIF <span>·</span> WebM <span>·</span> Text</span>
+            <span class="kbd">PNG <span>·</span> SVG <span>·</span> GIF <span>·</span> WebM <span>·</span> Text</span>
           </div>
         </div>
 
@@ -95,6 +95,7 @@
                 <select id="background">
                   <option value="black">Black</option>
                   <option value="white">White</option>
+                  <option value="transparent">Transparent</option>
                 </select>
                 <div class="output-note"><span class="full-frame-icon">⌗</span><span><strong>Full source frame</strong><small>No crop. Transparent pixels remain empty.</small></span></div>
                 <div class="text-limit"><span>Text-copy limit</span><strong>64 × 72 characters</strong></div>
@@ -110,7 +111,7 @@
                 <label class="range-row"><span>Colour saturation <output id="saturation-value">1.00</output></span><input id="saturation" type="range" min="0" max="2" step="0.05" value="1"></label>
                 <label class="switch-row"><span>Invert tones</span><input id="invert" type="checkbox"><i aria-hidden="true"></i></label>
               </section>
-              <div class="panel-help">White backgrounds automatically use dark glyph density. Black backgrounds use light glyph density.</div>
+              <div class="panel-help">White and transparent backgrounds use dark glyph density. Black backgrounds use light glyph density.</div>
             </div>
 
             <div id="panel-effects" class="tab-panel" data-panel="effects" hidden>
@@ -152,11 +153,12 @@
             <div class="section-heading"><span>Export</span><span class="section-number">05</span></div>
             <div class="export-grid">
               <button id="png-button" class="export-button" type="button">PNG <span>↓</span></button>
+              <button id="svg-button" class="export-button" type="button">SVG <span>↓</span></button>
               <button id="gif-button" class="export-button" type="button">GIF <span>↓</span></button>
               <button id="webm-button" class="export-button primary" type="button">WebM <span>↓</span></button>
               <button id="text-button" class="export-button" type="button">Text <span>↗</span></button>
             </div>
-            <p id="export-note" class="export-note">Text copy is available for static images. GIF uses local FFmpeg.</p>
+            <p id="export-note" class="export-note">SVG and text are available for static images. GIF uses local FFmpeg.</p>
           </section>
         </aside>
       </section>

@@ -38,13 +38,18 @@
     },
     {
       "date": "2026-08-19",
-      "decision": "Always render the complete source frame and offer black or white output backgrounds.",
+      "decision": "Always render the complete source frame and offer black, white, or transparent output backgrounds.",
       "reason": "Source composition must survive conversion without clipping."
     },
     {
       "date": "2026-08-19",
       "decision": "Limit paste-ready static ASCII text to a 64 by 72 character grid.",
       "reason": "Copied output should remain compact in website text boxes while preserving source aspect ratio."
+    },
+    {
+      "date": "2026-08-19",
+      "decision": "Offer transparent canvas output and true SVG glyph export for static images.",
+      "reason": "Transparent vector sources should remain reusable as scalable, background-free artwork."
     }
   ],
   "evidence": [],
