@@ -13,7 +13,7 @@ cd C:\Users\Cofe\design-extract-output\21stdevasciiimage\local-ascii-tool
 python .\server.py
 ```
 
-Open [http://127.0.0.1:8765](http://127.0.0.1:8765) in a Chromium-based browser.
+Open in a Chromium-based browser.
 
 ## Exports
 
