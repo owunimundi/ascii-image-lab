@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#010101">
+  <title>ASCII Image Lab</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="rail" aria-label="Tool sections">
+      <div class="rail-mark" aria-hidden="true">A<span>/</span></div>
+      <button class="rail-button active" type="button" title="Style" aria-label="Style" data-tab="style" aria-controls="panel-style" aria-selected="true">✦<small>Style</small></button>
+      <button class="rail-button" type="button" title="Adjust" aria-label="Adjust" data-tab="adjust" aria-controls="panel-adjust" aria-selected="false">◐<small>Adjust</small></button>
+      <button class="rail-button" type="button" title="Effects" aria-label="Effects" data-tab="effects" aria-controls="panel-effects" aria-selected="false">◌<small>Effects</small></button>
+      <button class="rail-button" type="button" title="Motion" aria-label="Motion" data-tab="motion" aria-controls="panel-motion" aria-selected="false">⌁<small>Motion</small></button>
+      <div class="rail-spacer"></div>
+      <a class="rail-link" href="https://21st.dev/community/ascii/editor" target="_blank" rel="noreferrer" title="Open source page" aria-label="Open source page">↗</a>
+    </aside>
+
+    <main class="workspace">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Local renderer</p>
+          <h1>ASCII Image Lab <span class="status-dot" aria-label="Local and ready"></span></h1>
+        </div>
+        <div class="top-actions">
+          <label class="upload-button" for="file-input">+ Open image / video</label>
+          <input id="file-input" type="file" accept="image/*,video/*">
+          <button id="clear-button" class="quiet-button" type="button">Clear</button>
+        </div>
+      </header>
+
+      <section class="content-grid">
+        <div class="stage-column">
+          <div class="stage-head">
+            <div>
+              <p class="eyebrow">Preview</p>
+              <p id="source-name" class="source-name">No source loaded</p>
+            </div>
+            <div class="stage-meta"><span id="render-size">—</span><span>•</span><span id="render-fps">60 fps preview</span></div>
+          </div>
+          <div id="stage" class="stage empty" tabindex="0" role="button" aria-label="Open a source image or video">
+            <canvas id="ascii-canvas"></canvas>
+            <div id="empty-state" class="empty-state">
+              <div class="empty-glyph">▦</div>
+              <strong>Drop a photo or browse</strong>
+              <span>JPG, PNG, GIF, WebP, MP4, WebM</span>
+            </div>
+          </div>
+          <div class="stage-footer">
+            <span id="status-message" role="status">Ready for a source.</span>
+            <span class="kbd">PNG <span>·</span> GIF <span>·</span> WebM <span>·</span> Text</span>
+          </div>
+        </div>
+
+        <aside class="controls" aria-label="Renderer controls">
+          <div class="control-panels">
+            <div id="panel-style" class="tab-panel active" data-panel="style">
+              <div class="panel-intro"><span>Style</span><small>Source, glyphs and canvas</small></div>
+              <section class="control-section">
+                <div class="section-heading"><span>Source</span><span class="section-number">01</span></div>
+                <div id="drop-zone" class="drop-zone">
+                  <label for="file-input"><span class="drop-icon">↥</span><span>Drop a source here</span><small>or browse local files</small></label>
+                </div>
+              </section>
+
+              <section class="control-section">
+                <div class="section-heading"><span>Characters</span><span class="section-number">02</span></div>
+                <label class="field-label" for="charset">Character set</label>
+                <select id="charset">
+                  <option value=" .:-=+*#%@">Classic density</option>
+                  <option value=" .·:+*#@">Soft dots</option>
+                  <option value=" ░▒▓█">Block shade</option>
+                  <option value=" ._-=+|/\\#@">Technical</option>
+                  <option value="custom">Custom</option>
+                </select>
+                <input id="custom-charset" class="custom-input" type="text" value=" .:-=+*#%@" aria-label="Custom character set" hidden>
+                <div class="inline-fields">
+                  <label><span>Columns</span><input id="columns" type="number" min="24" max="220" step="4" value="96"></label>
+                  <label><span>Font size</span><input id="font-size" type="number" min="6" max="28" value="12"></label>
+                </div>
+                <label class="field-label field-gap" for="color-mode">Output colour</label>
+                <select id="color-mode">
+                  <option value="source">Source colour</option>
+                  <option value="mono">Monochrome</option>
+                  <option value="blue">Signal blue</option>
+                </select>
+              </section>
+
+              <section class="control-section">
+                <div class="section-heading"><span>Canvas</span><span class="section-number">03</span></div>
+                <label class="field-label" for="background">Background</label>
+                <select id="background">
+                  <option value="black">Black</option>
+                  <option value="white">White</option>
+                </select>
+                <div class="output-note"><span class="full-frame-icon">⌗</span><span><strong>Full source frame</strong><small>No crop. Transparent pixels remain empty.</small></span></div>
+                <div class="text-limit"><span>Text-copy limit</span><strong>64 × 72 characters</strong></div>
+              </section>
+            </div>
+
+            <div id="panel-adjust" class="tab-panel" data-panel="adjust" hidden>
+              <div class="panel-intro"><span>Adjust</span><small>Tone and source balance</small></div>
+              <section class="control-section">
+                <div class="section-heading"><span>Tone</span><span class="section-number">01</span></div>
+                <label class="range-row"><span>Contrast <output id="contrast-value">1.00</output></span><input id="contrast" type="range" min="0.4" max="2.2" step="0.05" value="1"></label>
+                <label class="range-row"><span>Brightness <output id="brightness-value">0</output></span><input id="brightness" type="range" min="-80" max="80" step="1" value="0"></label>
+                <label class="range-row"><span>Colour saturation <output id="saturation-value">1.00</output></span><input id="saturation" type="range" min="0" max="2" step="0.05" value="1"></label>
+                <label class="switch-row"><span>Invert tones</span><input id="invert" type="checkbox"><i aria-hidden="true"></i></label>
+              </section>
+              <div class="panel-help">White backgrounds automatically use dark glyph density. Black backgrounds use light glyph density.</div>
+            </div>
+
+            <div id="panel-effects" class="tab-panel" data-panel="effects" hidden>
+              <div class="panel-intro"><span>Effects</span><small>Density texture and detail</small></div>
+              <section class="control-section">
+                <div class="section-heading"><span>Dither</span><span class="section-number">01</span></div>
+                <label class="field-label" for="dither">Pattern</label>
+                <select id="dither">
+                  <option value="none">None</option>
+                  <option value="ordered">Ordered grid</option>
+                  <option value="noise">Fine noise</option>
+                </select>
+                <label class="range-row"><span>Amount <output id="dither-value">18</output></span><input id="dither-amount" type="range" min="0" max="64" step="1" value="18"></label>
+              </section>
+              <div class="panel-help">Dithering redistributes nearby character densities while preserving the full source composition.</div>
+            </div>
+
+            <div id="panel-motion" class="tab-panel" data-panel="motion" hidden>
+              <div class="panel-intro"><span>Motion</span><small>Animated render settings</small></div>
+              <section class="control-section">
+                <div class="section-heading"><span>Animation</span><span class="section-number">01</span></div>
+                <label class="field-label" for="motion">Motion mode</label>
+                <select id="motion">
+                  <option value="static">Static</option>
+                  <option value="drift">Drift</option>
+                  <option value="zoom">Slow zoom</option>
+                  <option value="wave">Signal wave</option>
+                </select>
+                <div class="inline-fields">
+                  <label><span>Duration</span><select id="duration"><option value="3">3 sec</option><option value="5" selected>5 sec</option><option value="8">8 sec</option><option value="10">10 sec</option></select></label>
+                  <label><span>FPS</span><select id="fps"><option value="12">12</option><option value="24" selected>24</option><option value="30">30</option></select></label>
+                </div>
+              </section>
+              <div class="panel-help">Animated modes keep a safety margin so drift and zoom do not clip the source edges.</div>
+            </div>
+          </div>
+
+          <section class="export-section">
+            <div class="section-heading"><span>Export</span><span class="section-number">05</span></div>
+            <div class="export-grid">
+              <button id="png-button" class="export-button" type="button">PNG <span>↓</span></button>
+              <button id="gif-button" class="export-button" type="button">GIF <span>↓</span></button>
+              <button id="webm-button" class="export-button primary" type="button">WebM <span>↓</span></button>
+              <button id="text-button" class="export-button" type="button">Text <span>↗</span></button>
+            </div>
+            <p id="export-note" class="export-note">Text copy is available for static images. GIF uses local FFmpeg.</p>
+          </section>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="text-dialog" class="text-dialog" aria-labelledby="text-dialog-title">
+    <div class="dialog-head">
+      <div><p class="eyebrow">Paste-ready output</p><h2 id="text-dialog-title">ASCII text</h2></div>
+      <button id="text-close" class="dialog-close" type="button" aria-label="Close">×</button>
+    </div>
+    <textarea id="text-output" readonly spellcheck="false" aria-label="Generated ASCII text"></textarea>
+    <div class="dialog-footer">
+      <span id="text-size">Maximum 64 × 72 characters</span>
+      <div>
+        <button id="text-download" class="quiet-button" type="button">Download .txt</button>
+        <button id="text-copy" class="upload-button" type="button">Copy text</button>
+      </div>
+    </div>
+  </dialog>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

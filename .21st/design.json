@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "project": {
+    "name": "local-ascii-tool",
+    "productType": null,
+    "stack": []
+  },
+  "sources": {
+    "tokens": [],
+    "components": [],
+    "assets": [],
+    "instructions": []
+  },
+  "design": {
+    "colorMode": "unknown",
+    "colors": {},
+    "typography": {},
+    "spacing": {},
+    "radius": {},
+    "shadows": {},
+    "motion": {},
+    "density": "unknown"
+  },
+  "components": {
+    "installed": [],
+    "preferredPrimitives": [],
+    "patterns": []
+  },
+  "constraints": {
+    "must": [],
+    "avoid": []
+  },
+  "decisions": [
+    {
+      "date": "2026-08-19",
+      "decision": "Use the left rail as true Style, Adjust, Effects, and Motion tabs while keeping export actions persistent.",
+      "reason": "The editor needs clear parameter groups without changing the extracted compact 21st.dev layout."
+    },
+    {
+      "date": "2026-08-19",
+      "decision": "Always render the complete source frame and offer black or white output backgrounds.",
+      "reason": "Source composition must survive conversion without clipping."
+    },
+    {
+      "date": "2026-08-19",
+      "decision": "Limit paste-ready static ASCII text to a 64 by 72 character grid.",
+      "reason": "Copied output should remain compact in website text boxes while preserving source aspect ratio."
+    }
+  ],
+  "evidence": [],
+  "generatedAt": "2026-08-19T15:26:52.841Z"
+}
