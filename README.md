@@ -9,7 +9,7 @@ The editor keeps the full source frame, supports black, white, and transparent o
 From PowerShell:
 
 ```powershell
-cd C:\Users\Cofe\design-extract-output\21stdevasciiimage\local-ascii-tool
+cd C:\Users\(YourName)\design-extract-output\21stdevasciiimage\local-ascii-tool
 python .\server.py
 ```
 
